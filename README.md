@@ -1,60 +1,51 @@
-# CodeIgniter 4 Framework
 
-## What is CodeIgniter?
+### **Đề bài:**
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+Bạn đang phát triển một hệ thống thanh toán trực tuyến cho một cửa hàng điện tử. Hệ thống cần hỗ trợ nhiều cổng thanh toán khác nhau, bao gồm PayPal, Stripe, và Momo. Các cổng thanh toán này sẽ được gọi từ một controller khi người dùng đặt hàng. Bạn cần xây dựng một hệ thống linh hoạt để có thể dễ dàng thay thế hoặc thêm mới các cổng thanh toán mà không cần thay đổi quá nhiều mã nguồn.
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+----------
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+### **Yêu cầu:**
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
-
-## Important Change with index.php
-
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
-
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Contributing
-
-We welcome contributions from the community.
-
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
-
-## Server Requirements
-
-PHP version 8.1 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+1.  **Tạo Interface `PaymentGatewayInterface`:**
+    
+    -   Interface này sẽ định nghĩa một phương thức `processPayment($orderData)`, nơi bạn sẽ xử lý thanh toán cho mỗi cổng.
+        
+    
+    **Tạo Migration và Model:**
+    
+    -   Tạo migration và model cho bảng `orders`.
+        
+2.  **Tạo API `createOrder` trong `PaymentController`** lưu dữ liệu vào table `orders`.
+    
+    -   **Sử dụng phương thức `processPayment` tại Lớp `MomoService` (payment_type = momo)** bổ sung các trường hợp nếu số điện thoại là:
+        
+        -   **089111111** thì trả về trạng thái thất bại kèm message `'Something went wrong'` và `payment_status = 0`.
+            
+        -   **089999999** thì trả về thành công kèm message `'Payment processed by Momo'` và `payment_status = 1`.
+            
+        -   Các trường hợp khác thì thất bại và message là `'Please enter your phone'` (không insert dữ liệu vào bảng).
+            
+3.  **Tạo thêm phương thức thanh toán mới là Stripe và PayPal và tích hợp vào `PaymentController.createOrder()`**:
+    
+    -   **Stripe:**
+        
+        -   Nếu **Credit Card** truyền vào là `'4242424242424242'` thì `status = 1` (thành công).
+            
+        -   Nếu **Credit Card** truyền vào là `'4000000000001018'` thì `status = 0` (thất bại).
+            
+        -   Nếu **Credit Card** không đúng định dạng thì `status = 2` (không hợp lệ).
+            
+        -   Các trường hợp khác không insert dữ liệu vào bảng `orders`.
+            
+    -   **PayPal:**
+        
+        -   Nếu **email** truyền vào là `'success@ttrpay.net'` thì `status = 1` (thành công).
+            
+        -   Nếu **email** truyền vào là `'failed@ttrpay.net'` thì `status = 0` (thất bại).
+            
+        -   Nếu **email** không đúng định dạng thì `status = 2` (không hợp lệ).
+            
+        -   Các trường hợp khác không insert dữ liệu vào bảng `orders`.
+            
+4.  **Đảm bảo các dữ liệu POST request truyền vào được validate trước khi lưu vào cơ sở dữ liệu.**
