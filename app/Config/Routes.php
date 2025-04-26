@@ -8,4 +8,4 @@ use App\Controllers\PaymentController;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
-$routes->post('payment/create', 'PaymentController::createOrder');
+$routes->post('/api/payment/create', 'PaymentController::createOrder');
